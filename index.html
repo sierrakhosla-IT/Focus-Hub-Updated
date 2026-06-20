@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient-layer" aria-hidden="true"></div>
+
+  <div class="app-shell">
+
+    <!-- ── FIXED LEFT RAIL ── -->
+    <aside class="rail glass-panel" id="rail">
+
+      <div class="rail-top">
+        <div class="rail-brand">
+          <span class="rail-logo">Focus Hub</span>
+          <span class="rail-logo-dot"></span>
+        </div>
+        <time class="rail-date" id="rail-date"></time>
+      </div>
+
+      <!-- Scrollable section content -->
+      <div class="rail-scroll">
+
+        <!-- Current Focus -->
+        <div class="rail-section" id="rail-focus-wrap">
+          <div class="rail-label">Current Focus</div>
+          <div class="rail-focus-card" id="rail-focus-card">
+            <span class="rail-focus-dot"></span>
+            <span class="rail-focus-text" id="rail-focus-text">No focus set</span>
+            <button type="button" class="rail-focus-clear" id="rail-focus-clear" hidden data-focus-clear="1">✕</button>
+          </div>
+          <div class="rail-focus-timer" id="rail-focus-timer"></div>
+        </div>
+
+        <!-- Today's Targets -->
+        <div class="rail-section">
+          <div class="rail-label">Today's Targets</div>
+          <div id="rail-targets"></div>
+        </div>
+
+        <!-- Up Next -->
+        <div class="rail-section">
+          <div class="rail-label">Up Next</div>
+          <div id="rail-upnext"></div>
+        </div>
+
+        <!-- Parked — Waiting on Someone -->
+        <div class="rail-section" id="rail-parked-wrap">
+          <div class="rail-label">Waiting On</div>
+          <div id="rail-parked-list"></div>
+          <button type="button" class="rail-parked-add" id="btn-add-parked">+ Add</button>
+        </div>
+
+        <!-- Quick Capture Zone -->
+        <div class="rail-section" id="rail-capture-wrap">
+          <div class="rail-label">Quick Capture</div>
+          <div id="rail-capture-list"></div>
+          <div class="rail-capture-input-wrap">
+            <input type="text" id="rail-capture-input" class="rail-capture-input" placeholder="Something just landed…" maxlength="120">
+            <button type="button" class="rail-capture-btn" id="btn-rail-capture">↵</button>
+          </div>
+        </div>
+
+        <!-- Interruptions -->
+        <div class="rail-section" id="rail-interrupt-wrap">
+          <div class="rail-label">Interruptions Today</div>
+          <div class="rail-interrupt-wrap">
+            <span class="rail-interrupt-count" id="rail-interrupt-count">0</span>
+            <button type="button" class="rail-interrupt-btn" id="btn-add-interrupt">+ Interruption</button>
+            <button type="button" class="rail-interrupt-reset" id="btn-reset-interrupt" title="Reset">↺</button>
+          </div>
+        </div>
+
+      </div><!-- /.rail-scroll -->
+
+      <!-- Rail actions -->
+      <div class="rail-actions">
+        <span class="save-pill" id="save-status">Ready</span>
+        <button type="button" class="rail-btn rail-btn-primary" id="btn-new-day">New Day</button>
+        <button type="button" class="rail-btn rail-btn-ghost" id="btn-clean">Clean</button>
+        <button type="button" class="rail-btn rail-btn-eod" id="btn-eod-panel">End of Day</button>
+      </div>
+
+    </aside>
+
+    <!-- ── SCROLLABLE WORKSPACE ── -->
+    <main class="workspace" id="workspace">
+
+      <!-- 1. Brain Dump -->
+      <section class="ws-card ws-card-intake" id="section-intake">
+        <div class="ws-card-head">
+          <h2 class="ws-title">Brain Dump</h2>
+          <span class="ws-sub">Type anything — system routes it</span>
+          <button type="button" class="ai-priority-btn" id="btn-ai-priority" title="Let AI rank your priorities">✦ Prioritize for me</button>
+        </div>
+        <div id="ai-priority-output" class="ai-priority-output" hidden></div>
+        <div class="intake-field-wrap">
+          <textarea id="intake-input" class="intake-textarea" rows="2"
+            spellcheck="false"
+            placeholder="Type a task, ticket, note, or anything on your mind… hit Enter or click Route"></textarea>
+          <div class="intake-controls">
+            <div class="intake-tag-preview" id="intake-preview"></div>
+            <button type="button" class="intake-submit" id="btn-intake-route">Route →</button>
+          </div>
+        </div>
+        <div class="intake-queue" id="intake-queue"></div>
+      </section>
+
+      <!-- 2. Daily Targets -->
+      <section class="ws-card" id="section-targets">
+        <div class="ws-card-head">
+          <h2 class="ws-title">Daily Targets</h2>
+          <span class="cap-badge">2 max</span>
+        </div>
+        <div class="targets-grid" id="targets-list"></div>
+        <div class="start-checks">
+          <label class="clay-check">
+            <input type="checkbox" id="chk-targets-locked">
+            <span class="check-sphere"></span>
+            <span>Targets locked</span>
+          </label>
+
+        </div>
+      </section>
+
+      <!-- 3. Execution Blocks -->
+      <section class="ws-card" id="section-blocks">
+        <div class="ws-card-head ws-card-head-inline">
+          <h2 class="ws-title">Execution Blocks</h2>
+          <span class="task-counter" id="task-counter">0 tasks</span>
+        </div>
+        <div id="progress-wave" class="progress-wave">
+          <div class="progress-wave-fill" id="progress-fill"></div>
+        </div>
+
+        <div class="blocks-grid">
+
+          <article class="block block-peach" data-block="block1">
+            <header class="block-head">
+              <span class="block-label">Block 1</span>
+              <span class="block-time">45 min</span>
+            </header>
+            <div class="block-cols">
+              <div class="task-lane" data-lane="donow">
+                <h3 class="lane-label">Do Now <span class="lane-cap">1 big task · 2 max</span></h3>
+                <div class="task-list" id="b1-donow"></div>
+              </div>
+              <div class="task-lane" data-lane="quickhits">
+                <h3 class="lane-label">Quick Hits <span class="lane-cap">tickets · fast actions</span></h3>
+                <div class="task-list" id="b1-quickhits"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="block block-mint" data-block="block2">
+            <header class="block-head">
+              <span class="block-label">Block 2</span>
+              <span class="block-time">45 min</span>
+            </header>
+            <div class="block-cols">
+              <div class="task-lane" data-lane="donow">
+                <h3 class="lane-label">Do Now <span class="lane-cap">1 big task · 2 max</span></h3>
+                <div class="task-list" id="b2-donow"></div>
+              </div>
+              <div class="task-lane" data-lane="quickhits">
+                <h3 class="lane-label">Quick Hits <span class="lane-cap">tickets · fast actions</span></h3>
+                <div class="task-list" id="b2-quickhits"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="block block-sage" data-block="block3">
+            <header class="block-head">
+              <span class="block-label">Block 3</span>
+              <span class="block-time">45 min · move or close</span>
+            </header>
+            <div class="task-list" id="b3-items"></div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- 4. Waiting On / Blockers -->
+      <section class="ws-card" id="section-followups">
+        <div class="ws-card-head">
+          <h2 class="ws-title">Waiting On / Blockers</h2>
+          <span class="cap-badge">3 max</span>
+        </div>
+        <p class="ws-hint">Approvals, responses, external blockers only</p>
+        <div class="followups-table">
+          <div class="followups-head">
+            <span>SNOW / REF</span>
+            <span>SENT TO</span>
+            <span>REPLY NEEDED</span>
+            <span></span>
+          </div>
+          <div id="followups-list"></div>
+        </div>
+        <button type="button" class="btn-add" id="btn-add-followup">+ Add blocker</button>
+      </section>
+
+      <!-- 5. Work Notes -->
+      <section class="ws-card ws-card-notes" id="section-notes">
+        <div class="ws-card-head">
+          <h2 class="ws-title">Work Notes</h2>
+          <span class="ws-sub">Scratchpad — not saved to targets</span>
+        </div>
+        <textarea id="work-notes" class="clay-textarea" rows="3"
+          spellcheck="false" placeholder="Notes, context, anything you need to remember…"></textarea>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ── END OF DAY PANEL (slide-in) ── -->
+  <div class="eod-overlay" id="eod-overlay" hidden></div>
+  <aside class="eod-panel glass-panel" id="eod-panel" aria-hidden="true">
+    <header class="eod-head">
+      <h2 class="ws-title">End of Day</h2>
+      <button type="button" class="btn-icon" id="btn-eod-close">✕</button>
+    </header>
+    <div class="eod-body">
+      <div class="eod-field">
+        <label class="field-label">Closed today</label>
+        <textarea id="eod-closed" class="clay-textarea" rows="3" spellcheck="false" placeholder="What got done?"></textarea>
+      </div>
+      <div class="eod-field">
+        <label class="field-label">Still stuck <span class="lane-cap">4 max</span></label>
+        <div id="eod-stuck-list"></div>
+        <button type="button" class="btn-add btn-add-sm" id="btn-add-stuck">+ Add</button>
+      </div>
+      <div class="eod-field">
+        <label class="field-label">Tomorrow's Targets</label>
+        <input type="text" id="eod-t1" class="clay-input" placeholder="T1 — what must move tomorrow?" maxlength="120">
+        <input type="text" id="eod-t2" class="clay-input" placeholder="T2" maxlength="120" style="margin-top:6px">
+      </div>
+      <div class="eod-field">
+        <label class="field-label">Tomorrow blockers</label>
+        <div class="followups-table followups-table-sm">
+          <div class="followups-head">
+            <span>SNOW</span><span>SENT</span><span>REPLY</span><span></span>
+          </div>
+          <div id="eod-followups-list"></div>
+        </div>
+        <button type="button" class="btn-add btn-add-sm" id="btn-add-eod-followup">+ Add</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Drawer backdrop kept for EOD -->
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+
+  <div class="toast glass-panel" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
